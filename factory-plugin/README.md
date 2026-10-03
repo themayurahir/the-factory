@@ -1,11 +1,11 @@
 # factory (Phase 0, v0.2)
 
 Claude Code plugin. `/factory "<idea>"` turns a vague idea into a tested, reviewed repo under
-`D:/workspace/factory-runs/<slug>/`, with every stage's artifact in `<slug>/factory/`.
+`$FACTORY_RUNS/<slug>/` (default `D:/workspace/factory-runs`), with every stage's artifact in `<slug>/factory/`.
 
 Stages (each reads the previous stage's files): intake (`idea.md`) -> research (`research.md`) -> PRD (`prd.md`)
 -> plan (`plan.md`, `design.md` for web UIs) -> build (`build-log.md`) -> review (`reviews/`, max 2 fix loops)
--> verify (`verify.md`) -> deliver (`report.md` + commit) -> learn (`factory-runs/lessons.md`).
+-> verify (`verify.md`) -> deliver (`report.md` + commit) -> learn (`$FACTORY_RUNS/lessons.md`).
 
 Files: `commands/factory.md` (conductor), `stacks.md` (stack profiles, add-ons, method files and their headless
 overrides; read at runtime), `hooks/` (guardrails), `run-headless.sh`, `eval/` (Gate 1 harness).
@@ -127,4 +127,5 @@ pushes; e2e-runner uses Playwright, not agent-browser; learn/learn-eval write to
 The plugin adds only the conductor, `stacks.md`, hooks and scripts. Every agent and skill it calls lives in the
 user's `~/.claude` (`agents/`, `commands/`, `.agents/skills/`, `skills/synced/` for `anthropic-skills:deep-research`)
 or in installed plugins (`ponytail`, `frontend-design`). On another machine those must be installed, and
-`RUNS_ROOT` in `commands/factory.md` / `FACTORY_RUNS` must point at a real folder.
+`FACTORY_RUNS` (or the default `D:/workspace/factory-runs`) must be a real folder; the conductor, guard hook,
+`run-headless.sh` and `eval/run-gate.sh` all read it, and `lessons.md` lives there.

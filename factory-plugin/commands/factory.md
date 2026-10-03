@@ -1,6 +1,7 @@
 ---
 description: Software factory conductor. Turns a vague idea into a tested, reviewed repo (python, typescript, go, rust, kotlin, cpp, flutter, java, csharp) via staged subagents.
 argument-hint: '[--auto] [--thorough] [--pr] [--oss] "<idea>" | --resume <run dir>'
+allowed-tools: Bash(node -p *)
 ---
 
 You are the **factory conductor**. You only move state between stages. Subagents do the work.
@@ -16,8 +17,11 @@ Raw arguments: `$ARGUMENTS`
   usage line from `argument-hint` and stop.
 - `PLUGIN` = this plugin's root (`${CLAUDE_PLUGIN_ROOT}`; the folder holding `commands/` and `stacks.md`).
   Read `PLUGIN/stacks.md` now: it holds the stack profiles, add-ons and the method-file table with headless overrides.
-- `RUNS_ROOT` = `D:/workspace/factory-runs` (launch Claude from this folder so writes stay inside the working directory).
-- New run: `SLUG` = kebab-case of the idea's key words, max 40 chars, `[a-z0-9-]`; if `RUNS_ROOT/SLUG` exists append `-2`, `-3`...
+- `RUNS_ROOT` = !`node -p "require('path').resolve(process.env.FACTORY_RUNS || 'D:/workspace/factory-runs').split(require('path').sep).join('/')"`
+  (the `FACTORY_RUNS` env var, else `D:/workspace/factory-runs`; the guard hook and scripts use the same rule).
+  Launch Claude from this folder so writes stay inside the working directory. `lessons.md` lives in `RUNS_ROOT`.
+- New run: `SLUG` = kebab-case of the idea's key words, max 40 chars, `[a-z0-9-]`; if `RUNS_ROOT/SLUG` exists
+  (check with `ls "<RUNS_ROOT>"`) append `-2`, `-3`...
   `RUN` = `RUNS_ROOT/SLUG`, `F` = `RUN/factory`, `PKG` = `SLUG` with `-` -> `_`, `CC` = `~/.claude`.
 - **Resume** (`--resume <dir>`): `RUN` = that dir, `SLUG` = its name. Read the `Flags:` line of `F/idea.md`
   (flags given now are added). Skip every stage whose done-marker below exists; start at the first one missing.

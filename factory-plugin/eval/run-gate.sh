@@ -16,15 +16,16 @@ while IFS= read -r idea; do
   case "$idea" in ''|'#'*) continue ;; esac
   TOTAL=$((TOTAL + 1))
   log="$LOGS/idea-$TOTAL.jsonl"
-  start=$(date +%s)
+  start=$(date +%s) before=$(ls -1 "$RUNS")
   "$HERE/../run-headless.sh" "$@" "$idea" "$BUDGET" > "$log" 2> "$LOGS/idea-$TOTAL.err"
   mins=$(( ($(date +%s) - start) / 60 ))
   result=$(grep '"type":"result"' "$log" | tail -1)
   cost=$(printf '%s' "$result" | grep -o '"total_cost_usd":[0-9.]*' | cut -d: -f2)
-  run=$(printf '%s' "$result" | grep -o 'factory-runs/[a-z0-9-]*' | head -1)
-  verdict=FAIL verify="no verify.md"
-  if [ -n "$run" ] && [ -f "$RUNS/${run#factory-runs/}/factory/verify.md" ]; then
-    verify=$(grep -o 'VERIFY: .*' "$RUNS/${run#factory-runs/}/factory/verify.md" | tail -1)
+  # Run dir = the new folder with a factory/ inside (same rule as run-headless.sh; works for any FACTORY_RUNS).
+  run="" verdict=FAIL verify="no verify.md"
+  for d in $(ls -1 "$RUNS" | grep -vxF -f <(printf '%s\n' "$before")); do [ -d "$RUNS/$d/factory" ] && run=$d; done
+  if [ -n "$run" ] && [ -f "$RUNS/$run/factory/verify.md" ]; then
+    verify=$(grep -o 'VERIFY: .*' "$RUNS/$run/factory/verify.md" | tail -1)
     case "$verify" in "VERIFY: PASS"*) verdict=PASS; PASSED=$((PASSED + 1)) ;; esac
   fi
   ROWS="$ROWS| $TOTAL | $idea | $verdict | \`$verify\` | ${run:-none} | \$${cost:-?} | ${mins}m |

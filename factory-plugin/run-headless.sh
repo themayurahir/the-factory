@@ -33,6 +33,7 @@ CMDS=(
   "flutter create*" "flutter pub*" "flutter test*" "flutter analyze*" "flutter build*"
   "dart create*" "dart pub*" "dart test*" "dart analyze*" "dart format*" "dart run*"
   "cmake *" "ctest*" "./build/*"
+  "ls *"  # conductor setup: is RUNS_ROOT/<slug> taken?
   # git only as `git -C <dir> <subcommand>`: Claude Code always denies `cd <dir> && git ...` compounds.
   "git -C * init*" "git -C * add *" "git -C * commit *" "git -C * status*" "git -C * diff*" "git -C * log*"
   "git -C * ls-files*" "git -C * rev-parse*" "git -C * remote get-url*"
@@ -47,6 +48,8 @@ ALLOW+=("Read(~/.claude/commands/**)" "Read(~/.claude/agents/**)" "Read(~/.claud
         "Skill" "WebSearch" "WebFetch(domain:*)")
 
 mkdir -p "$RUNS" && cd "$RUNS"
+# One spelling for the conductor, guard.js and Claude's cwd: absolute, long names (no MAYURA~1), forward slashes.
+RUNS="$(node -p 'require("fs").realpathSync.native(process.argv[1]).split("\\").join("/")' "$RUNS")"
 BEFORE="$(ls -1 "$RUNS")" OUT="$(mktemp)"; trap 'rm -f "$OUT"' EXIT
 FACTORY_AUTO=1 FACTORY_RUNS="$RUNS" CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000 claude -p "$PROMPT" \
   --plugin-dir "$PLUGIN" \
