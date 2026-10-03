@@ -79,6 +79,7 @@ Fields: **detect** (words in the idea/PRD), **layout**, **setup**, **test**, **l
 |---|---|---|
 | `DB:` is not `none` (SQL, SQLite, ORM) | `database-reviewer` (report only) | Plan (schema review) and Review round 1 |
 | `UI:` is not `none` | `general-purpose` + `frontend-design` + `design-quality` -> `F/design/`, `F/design.md` | Design; Plan, Build, Review, Verify, Deliver read it |
+| `UI:` is not `none` | `general-purpose` offices (marketing, pricing, support, legal) -> `RUN/launch/`, `F/offices.md` | Offices; Deliver links them |
 | `UI: web` | `e2e-runner` + `e2e` skill (Playwright) | Verify |
 | `ML: yes` (python) | `pytorch-build-resolver` | Build / Verify failures |
 
@@ -91,6 +92,8 @@ Fields: **detect** (words in the idea/PRD), **layout**, **setup**, **test**, **l
 | prp-prd | `CC/commands/prp-prd.md` | Skip every GATE: answer its questions from `F/idea.md` + `F/research.md`; write `F/prd.md`, not `.claude/PRPs/`. |
 | frontend-design | Skill `frontend-design:frontend-design` | Write only under `F/design/` and `F/design.md`; no questions. |
 | design-quality | `CC/rules/web/design-quality.md` + `CC/rules/web/coding-style.md` (CSS tokens) | none |
+| content-engine | `CC/.agents/skills/content-engine/SKILL.md` | Source material = the factory files; voice = `F/design/brand.md`; drafts only, never publish. |
+| market-research | `CC/.agents/skills/market-research/SKILL.md` | No new web research for prices: competitor numbers only from `F/research.md`, else `unverified`. |
 | prp-plan | `CC/commands/prp-plan.md` | Never STOP to ask: state assumptions; return the plan text (planner is read-only). |
 | tdd | `CC/.agents/skills/tdd-workflow/SKILL.md` | none |
 | prp-implement | `CC/commands/prp-implement.md` | Use phases 3-4 (validate after every task) only. Plan is `F/plan.md`; no branch/stash checks, no archiving, report into `F/build-log.md`. |

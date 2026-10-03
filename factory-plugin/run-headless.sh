@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Headless /factory run.
-#   ./run-headless.sh [--thorough] [--pr] [--oss] "<idea>" [budget_usd]
+#   ./run-headless.sh [--thorough] [--pr] [--oss] [--offices <list|none>] "<idea>" [budget_usd]
 #   ./run-headless.sh --resume <run dir> [budget_usd]
 # Never bypasses permissions: acceptEdits + a narrow allowlist; anything else is denied (no prompts, no stalls).
 set -eu
@@ -11,6 +11,7 @@ FLAGS="" IDEA="" RESUME="" BUDGET=25
 while [ $# -gt 0 ]; do
   case "$1" in
     --thorough|--pr|--oss) FLAGS="$FLAGS $1" ;;
+    --offices) FLAGS="$FLAGS --offices $2"; shift ;;
     --resume) RESUME="$2"; shift ;;
     *) if [ -z "$IDEA" ] && [ -z "$RESUME" ]; then IDEA="$1"; else BUDGET="$1"; fi ;;
   esac
@@ -18,7 +19,7 @@ while [ $# -gt 0 ]; do
 done
 if [ -n "$RESUME" ]; then PROMPT="/factory:factory --auto$FLAGS --resume \"$RESUME\""
 elif [ -n "$IDEA" ]; then PROMPT="/factory:factory --auto$FLAGS \"$IDEA\""
-else echo "usage: $0 [--thorough] [--pr] [--oss] \"<idea>\" [budget] | --resume <dir> [budget]" >&2; exit 2; fi
+else echo "usage: $0 [--thorough] [--pr] [--oss] [--offices <list|none>] \"<idea>\" [budget] | --resume <dir> [budget]" >&2; exit 2; fi
 
 # Shell command prefixes the stack profiles in stacks.md use. Each becomes a Bash(...) and a PowerShell(...) rule.
 CMDS=(

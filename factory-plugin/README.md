@@ -1,12 +1,12 @@
 # factory (Phase 0, v0.2)
 
-Claude Code plugin. `/factory "<idea>"` turns a vague idea into a tested, reviewed repo under
+Claude Code plugin. `/factory "<idea>"` turns a vague idea into a tested, reviewed repo (plus a launch kit for apps with a UI) under
 `$FACTORY_RUNS/<slug>/` (default `D:/workspace/factory-runs`), with every stage's artifact in `<slug>/factory/`.
 
 Stages (each reads the previous stage's files): intake (`idea.md`) -> research (`research.md`) -> PRD (`prd.md`)
 -> design (apps with a UI: `design.md` + `design/`) -> plan (`plan.md`) -> build (`build-log.md`) -> review
-(`reviews/`, max 2 fix loops) -> verify (`verify.md`) -> deliver (`report.md` + commit) -> learn
-(`$FACTORY_RUNS/lessons.md`).
+(`reviews/`, max 2 fix loops) -> verify (`verify.md`) -> offices (apps with a UI: `<slug>/launch/` + `offices.md`)
+-> G3 release approval -> deliver (`report.md` + commit) -> learn (`$FACTORY_RUNS/lessons.md`).
 
 Design outputs (`factory/design/`, skipped when the PRD says `UI: none`): `brand.md` (name options + pick, tagline,
 voice, style direction, palette with light/dark values and contrast notes, type pairing, spacing/radius/shadow/motion
@@ -14,6 +14,21 @@ scales), `tokens.css` (+ a stack form such as a Tailwind theme), `logo.svg`, `fa
 components, navigation, empty/loading/error states) and `mockups/<screen>.html` (static, responsive, light/dark; the
 visual source of truth). Plan, build, review, verify and deliver all read them; deliver copies the logo/favicon into
 the app and links `brand.md` from the README.
+
+Offices (go-to-market drafts, skipped when the PRD says `UI: none`; one `general-purpose` agent each, in parallel,
+after Verify so G3 approves code and launch kit together; outputs go into the delivered repo under `launch/`):
+
+| Office | Output | Content |
+|---|---|---|
+| marketing | `launch/marketing.md` | positioning vs. the alternatives in `research.md`, landing-page copy per section in the brand voice, 3 headline variants, SEO keywords with intent, launch post drafts (Reddit, X, LinkedIn, Product Hunt) |
+| pricing | `launch/pricing.md` | free/paid tiers, USD (+ INR for India), competitor prices only from `research.md` with sources (else `unverified`), rationale, first experiment |
+| support | `launch/support/` | `faq.md`, `getting-started.md`, `onboarding-emails.md` (3 emails), `canned-replies.md` (top 5 issues) |
+| legal | `launch/legal/` | `privacy-policy.md`, `terms.md` from the data the app really collects (DPDP Act 2023, GDPR, cookies if any), `[PLACEHOLDER]`s for company details |
+
+The legal files are templates drafted by AI, not legal advice; each starts with that line. Have a lawyer review
+them before use. Everything in `launch/` is a draft to edit, not something the factory publishes. A failed office is
+retried once, then logged as failed; it never blocks delivery. `factory/offices.md` lists the files and ends with
+`OFFICES: marketing=done pricing=done support=done legal=done`; deliver adds a `## Launch kit` README section.
 
 Files: `commands/factory.md` (conductor), `stacks.md` (stack profiles, add-ons, method files and their headless
 overrides; read at runtime), `hooks/` (guardrails), `run-headless.sh`, `eval/` (Gate 1 harness).
@@ -30,6 +45,7 @@ Headless (no questions; assumptions go to `idea.md`):
 
     ./run-headless.sh "a CLI to track my team leave days" 25 > run.jsonl
     ./run-headless.sh --thorough "a habit tracker web app with SQLite" 60 > run.jsonl
+    ./run-headless.sh --offices marketing,legal "a booking page for my salon" 30 > run.jsonl
     ./run-headless.sh --resume D:/workspace/factory-runs/<slug> 25 > resume.jsonl
 
 | Flag | Effect |
@@ -39,10 +55,11 @@ Headless (no questions; assumptions go to `idea.md`):
 | `--resume <run dir>` | Skips stages whose artifact exists and starts at the first missing one |
 | `--pr` | After the commit: branch `factory/<slug>`, push and open a PR, only if the repo has an `origin` remote |
 | `--oss` | Adds open-source packaging (LICENSE, CONTRIBUTING, setup.sh, CLAUDE.md, issue templates) |
+| `--offices <list\|none>` | Which offices run (comma list of `marketing,pricing,support,legal`; default all four for UI apps; `none` skips the stage) |
 
 Gates (interactive only; `--auto` skips them): G1 you answer the intake questions; G2 you approve the PRD (approve,
 request changes = revise and ask again, or stop); GD you approve the design (same choices; UI apps only); G3 you
-approve the release after Verify, before the commit/PR (approve or stop). Approvals are logged as `g2: done` /
+approve the release after Verify and Offices, before the commit/PR (approve or stop). Approvals are logged as `g2: done` /
 `gd: done` / `g3: done` in `run-log.md`, so `--resume` does not re-ask them; a stopped run resumes at the gate.
 
 Cost: `report.md` ends with a `Cost:` line. Interactive runs write `Cost: n/a (interactive; check /cost)`.
@@ -81,6 +98,7 @@ Only the python profile has been run end to end; the others are untested wiring.
 | Build | tdd-guide + tdd/stack test skill + prp-implement + test-coverage; stack build-fixer on failure | gan-build polish loop (web UI, 3 iterations) |
 | Review | stack reviewer + code-review (+ tokens/layouts check for UI), security-reviewer + security-review, database-reviewer (DB) | santa-loop, ponytail-review, silent-failure-hunter, type-design-analyzer (typed), performance-optimizer, pr-test-analyzer |
 | Verify | general-purpose evaluator + verify + run + test-coverage; e2e-runner + e2e (web UI, also vs mockups) | gan-evaluator, quality-gate |
+| Offices (UI apps) | 4 general-purpose offices in parallel; marketing uses content-engine, pricing market-research | |
 | Deliver | doc-updater (update-docs, update-codemaps), prp-commit; prp-pr with `--pr`; opensource-packager with `--oss` | |
 | Learn | learn + learn-eval -> `lessons.md` (read by later Plan and Build stages) | |
 

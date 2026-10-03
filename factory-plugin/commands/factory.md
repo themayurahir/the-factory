@@ -1,6 +1,6 @@
 ---
-description: Software factory conductor. Turns a vague idea into a tested, reviewed repo (python, typescript, go, rust, kotlin, cpp, flutter, java, csharp) via staged subagents.
-argument-hint: '[--auto] [--thorough] [--pr] [--oss] "<idea>" | --resume <run dir>'
+description: Software factory conductor. Turns a vague idea into a tested, reviewed repo plus a launch kit (python, typescript, go, rust, kotlin, cpp, flutter, java, csharp) via staged subagents.
+argument-hint: '[--auto] [--thorough] [--pr] [--oss] [--offices <list|none>] "<idea>" | --resume <run dir>'
 allowed-tools: Bash(node -p *)
 ---
 
@@ -12,9 +12,10 @@ Raw arguments: `$ARGUMENTS`
 
 ## 0. Setup
 
-- Flags: `AUTO` (`--auto`), `THOROUGH` (`--thorough`), `PR` (`--pr`), `OSS` (`--oss`), `RESUME` (`--resume <dir>`).
-  `IDEA` = the arguments without flags and outer quotes. If `IDEA` and `RESUME` are both empty, reply with the
-  usage line from `argument-hint` and stop.
+- Flags: `AUTO` (`--auto`), `THOROUGH` (`--thorough`), `PR` (`--pr`), `OSS` (`--oss`), `RESUME` (`--resume <dir>`),
+  `OFFICES` (`--offices <list|none>`: comma list of marketing, pricing, support, legal; default all four).
+  `IDEA` = the arguments without flags (and their values) and outer quotes. If `IDEA` and `RESUME` are both empty,
+  reply with the usage line from `argument-hint` and stop.
 - `PLUGIN` = this plugin's root (`${CLAUDE_PLUGIN_ROOT}`; the folder holding `commands/` and `stacks.md`).
   Read `PLUGIN/stacks.md` now: it holds the stack profiles, add-ons and the method-file table with headless overrides.
 - `RUNS_ROOT` = !`node -p "require('path').resolve(process.env.FACTORY_RUNS || 'D:/workspace/factory-runs').split(require('path').sep).join('/')"`
@@ -24,7 +25,8 @@ Raw arguments: `$ARGUMENTS`
   (check with `ls "<RUNS_ROOT>"`) append `-2`, `-3`...
   `RUN` = `RUNS_ROOT/SLUG`, `F` = `RUN/factory`, `PKG` = `SLUG` with `-` -> `_`, `CC` = `~/.claude`.
 - **Resume** (`--resume <dir>`): `RUN` = that dir, `SLUG` = its name. Read the `Flags:` line of `F/idea.md`
-  (flags given now are added). Skip every stage whose done-marker below exists; start at the first one missing.
+  (flags given now are added; a new `--offices` replaces the old one). Skip every stage whose done-marker below
+  exists; start at the first one missing.
   Review: continue at round (highest N in `F/reviews/`) + 1, but first run fix N if round N had CRITICAL/HIGH and
   `F/run-log.md` has no `fix-N` line. Build: tell the builder to keep finished tasks and continue.
   Log `- <time> resume: from <stage>`.
@@ -41,12 +43,13 @@ Raw arguments: `$ARGUMENTS`
 | 6 Build | `F/build-log.md` with a `BUILD:` line |
 | 7 Review | `F/reviews/summary.md` with a `REVIEW: CLOSED` line |
 | 8 Verify | `F/verify.md` with a `VERIFY:` line |
+| 9 Offices | `F/offices.md` with an `OFFICES:` line, or an `offices: skipped` line in `F/run-log.md` |
 | G3 Release approval | a `g3: done` line in `F/run-log.md` |
-| 9 Deliver | `F/report.md` and a commit in `RUN` |
-| 10 Learn | a `learn:` line in `F/run-log.md` |
+| 10 Deliver | `F/report.md` and a commit in `RUN` |
+| 11 Learn | a `learn:` line in `F/run-log.md` |
 
 **Gates** G2, GD and G3 ask you to approve (AskUserQuestion). With `AUTO` they are skipped (log `<gate>: skipped - auto`),
-and a gate (or Design, which older runs lack) also counts as passed when a later stage's done-marker exists.
+and a gate (or Design or Offices, which older runs lack) also counts as passed when a later stage's done-marker exists.
 **Stop** at a gate: log `<gate>: stopped`, reply with `RUN` and `/factory --resume "<RUN>"`, and end the run; a
 resumed run asks that gate again.
 
@@ -223,24 +226,59 @@ Close: write `F/reviews/summary.md` (rounds, each reviewer's last VERDICT) endin
 Read only the VERIFY line. If FAIL and no verify-fix has run: launch `tdd-guide` once ("Read `F/verify.md`; fix the
 failing ACs test-first; keep the suite green"), then rerun step 2 once.
 
-**G3 (you approve the release)**, unless `AUTO`: show a release summary (max ~10 lines): the VERIFY line (tests,
-coverage, app ran), failed ACs, the REVIEW line (open CRITICAL/HIGH) and what Deliver will do: commit all files in
-`RUN` as `feat: <SLUG> built by software factory`, and if `PR` push branch `factory/<SLUG>` and open a PR (else
-nothing is pushed). Ask: Approve / Stop. Approve: log `g3: done - approved`. Stop: see **Gates**.
+## 9. Offices -> `RUN/launch/` + `F/offices.md` (`general-purpose`, `[ui]` only)
 
-## 9. Deliver -> `F/report.md` + commit
+Go-to-market drafts for a product with users to sell to. If the PRD's `UI:` is `none`, log `offices: skipped - no UI`;
+if `OFFICES` is `none`, log `offices: skipped - --offices none`; then go to G3.
+
+1. Launch one `general-purpose` agent per office in `OFFICES`, **in parallel** (`seo-specialist` cannot write files).
+   Common prompt: "Inputs `F/idea.md`, `F/research.md`, `F/prd.md`, `F/design.md` and `F/design/` if present,
+   `F/plan.md`, `F/build-log.md`, `F/verify.md`, `RUN/README.md`. Write only your files under `RUN/launch/`; no shell
+   commands. Facts (features, data, competitors, prices) come only from these inputs; anything else is marked
+   `unverified`. Last reply line exactly `OFFICE <name>: done files=<n>`." Per office:
+   - **marketing** -> `launch/marketing.md`. Method: `content-engine`; voice from `F/design/brand.md`. First line
+     `> Drafts: review before publishing.` Positioning (who, problem, why us vs. the alternatives in `F/research.md`);
+     landing-page copy section by section, matching `F/design/layouts.md` and the mockups; 3 headline variants; SEO
+     keywords with search intent; launch posts for Reddit (subreddits that fit the users; follow their self-promotion
+     rules), X, LinkedIn and Product Hunt.
+   - **pricing** -> `launch/pricing.md`. Method: `market-research`. Free and paid tiers with what each includes;
+     prices in USD, plus INR if the idea targets India; a competitor table **only** from `F/research.md` with its
+     source links (never invent a competitor number: no price there means `unverified`); rationale; the first
+     pricing experiment to run.
+   - **support** -> `launch/support/`: `faq.md` (from the user stories and edge cases), `getting-started.md` (the real
+     app's flows step by step, from `F/plan.md`, `F/build-log.md` and `RUN/README.md`), `onboarding-emails.md`
+     (3-email sequence), `canned-replies.md` (top 5 expected issues).
+   - **legal** -> `launch/legal/privacy-policy.md` and `terms.md`, from what the app really collects: the data fields
+     in the PRD and the plan's data model, third parties (e.g. messaging providers), retention. India's DPDP Act 2023
+     and GDPR where relevant; a cookie section if the app sets cookies; `[PLACEHOLDER]` for company name, address,
+     contact and jurisdiction. First line of each file exactly
+     `**Template drafted by AI, not legal advice. Have a lawyer review it before use.**`
+2. An office without its `OFFICE` line or files (Glob `RUN/launch/`): relaunch it alone once; then it is `failed`.
+   A failed office never blocks delivery.
+3. Write `F/offices.md` yourself: one relative link per file (`../launch/...`), last line exactly
+   `OFFICES: marketing=<done|failed|skipped> pricing=<...> support=<...> legal=<...>` (`skipped` = not in `OFFICES`).
+   Log `offices: done - <OFFICES line>`.
+
+**G3 (you approve the release)**, unless `AUTO`: show a release summary (max ~10 lines): the VERIFY line (tests,
+coverage, app ran), failed ACs, the REVIEW line (open CRITICAL/HIGH), one line per office (done/failed) and the
+`RUN/launch/` path, and what Deliver will do: commit all files in `RUN` (code and `launch/`) as
+`feat: <SLUG> built by software factory`, and if `PR` push branch `factory/<SLUG>` and open a PR (else nothing is
+pushed). Ask: Approve / Stop. Approve: log `g3: done - approved`. Stop: see **Gates**.
+
+## 10. Deliver -> `F/report.md` + commit
 
 1. `doc-updater`: Methods `update-docs`, `update-codemaps` (override in stacks.md). Update `RUN/README.md` (setup,
    commands from source of truth, tests) and write `RUN/docs/CODEMAPS/architecture.md` (+ `data.md` if `[db]`,
    `frontend.md` if `[web]`). `[ui]`: copy `F/design/logo.svg` and `favicon.svg` into the app's static folder
    (e.g. `public/`) with Read + Write if not there yet, and add a `## Brand` README section linking
-   `factory/design/brand.md` and the mockups. Never touch `F/`.
+   `factory/design/brand.md` and the mockups. If `RUN/launch/` exists, add a short `## Launch kit` README section
+   linking `launch/` and its files (drafts; legal files need a lawyer's review). Never touch `F/` or `launch/`.
 2. `OSS`: `opensource-packager` on `RUN` (CLAUDE.md, setup.sh, LICENSE MIT, CONTRIBUTING.md, issue templates;
    merge into the README, do not replace it).
 3. Write `F/report.md` yourself from the files: what was built (2-4 lines) + AC summary from `F/verify.md`; key
-   decisions (stack, libraries, design direction, assumptions, plan choices); how to run (setup, help, one example, tests); known gaps
-   (open MEDIUM+ findings, failed ACs, gan scores < 7, out of scope); tier used; stages (copy `F/run-log.md`);
-   last, keep any `Cost:` lines an older `F/report.md` had, then add `Cost: n/a (interactive; check /cost)`
+   decisions (stack, libraries, design direction, assumptions, plan choices); how to run (setup, help, one example,
+   tests); launch kit (the files in `F/offices.md` and its OFFICES line); known gaps (open MEDIUM+ findings, failed
+   ACs, failed offices, gan scores < 7, out of scope); tier used; stages (copy `F/run-log.md`); last, keep any `Cost:` lines an older `F/report.md` had, then add `Cost: n/a (interactive; check /cost)`
    (`run-headless.sh` replaces it with the real cost).
 4. Commit inside `RUN` following `prp-commit` (all changes, never push), every git call as `git -C "<RUN>" ...`:
    `init` if needed; if `PR`, `checkout -b factory/<SLUG>`; ensure `.gitignore` covers P's build/venv/coverage dirs;
@@ -248,13 +286,14 @@ nothing is pushed). Ask: Approve / Stop. Approve: log `g3: done - approved`. Sto
 5. `PR`: if `git -C "<RUN>" remote get-url origin` succeeds, follow `prp-pr` (push `-u origin HEAD`, `gh pr create`);
    else log `pr: skipped - no origin remote`.
 
-## 10. Learn -> `<RUNS_ROOT>/lessons.md` (`general-purpose`)
+## 11. Learn -> `<RUNS_ROOT>/lessons.md` (`general-purpose`)
 
 Prompt: "Methods `learn` and `learn-eval` (override: no confirmation; write to `<RUNS_ROOT>/lessons.md`, never
-`~/.claude`). Read `F/run-log.md`, `F/build-log.md`, `F/reviews/summary.md`, the last review files and
-`F/verify.md`. Extract at most 3 reusable lessons (root cause + fix, things that wasted rounds). Run learn-eval's
-checklist against existing `lessons.md` entries; apply its verdict (Save / Absorb = edit the existing entry / Drop).
-Each entry: `- [<P>|all] <lesson> -- when: <trigger> (from <SLUG>, <date>)`. Return how many were saved."
+`~/.claude`). Read `F/run-log.md`, `F/build-log.md`, `F/reviews/summary.md`, the last review files,
+`F/verify.md` and `F/offices.md` if present. Extract at most 3 reusable lessons (root cause + fix, things that wasted
+rounds; for offices, what was wrong or missing in their inputs). Run learn-eval's checklist against existing
+`lessons.md` entries; apply its verdict (Save / Absorb = edit the existing entry / Drop). Each entry:
+`- [<P>|all] <lesson> -- when: <trigger> (from <SLUG>, <date>)`. Return how many were saved."
 Log `learn:`.
 
 Finish by replying with: `RUN`, the VERIFY line, the REVIEW line, the commit hash, and the tier. Nothing else.
