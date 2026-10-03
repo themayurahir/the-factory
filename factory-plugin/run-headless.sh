@@ -16,8 +16,8 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-if [ -n "$RESUME" ]; then PROMPT="/factory --auto$FLAGS --resume \"$RESUME\""
-elif [ -n "$IDEA" ]; then PROMPT="/factory --auto$FLAGS \"$IDEA\""
+if [ -n "$RESUME" ]; then PROMPT="/factory:factory --auto$FLAGS --resume \"$RESUME\""
+elif [ -n "$IDEA" ]; then PROMPT="/factory:factory --auto$FLAGS \"$IDEA\""
 else echo "usage: $0 [--thorough] [--pr] [--oss] \"<idea>\" [budget] | --resume <dir> [budget]" >&2; exit 2; fi
 
 # Shell command prefixes the stack profiles in stacks.md use. Each becomes a Bash(...) and a PowerShell(...) rule.
