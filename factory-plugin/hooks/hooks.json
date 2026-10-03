@@ -1,0 +1,13 @@
+{
+  "description": "Factory guardrails: block destructive shell commands, secret reads, edits by reviewer agents, and questions in --auto runs.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Read|Grep|Glob|Write|Edit|MultiEdit|NotebookEdit|AskUserQuestion",
+        "hooks": [
+          { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/guard.js\"", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

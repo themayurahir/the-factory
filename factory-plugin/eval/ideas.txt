@@ -1,0 +1,6 @@
+# Phase 0 Gate 1 sample ideas: one per line, '#' lines ignored. Gate passes when >= 3 of 5 runs end VERIFY: PASS.
+a CLI to track my team leave days
+a CLI that converts CSV files to markdown tables
+a CLI habit tracker that shows streaks per habit
+a CLI that splits a shared expense list into who-owes-whom settlements
+a CLI that checks a folder of markdown notes for broken links

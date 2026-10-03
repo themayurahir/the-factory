@@ -1,0 +1,6 @@
+{
+  "name": "factory",
+  "description": "Software factory: /factory turns a vague idea into a tested, reviewed repo across nine stack profiles, with guardrail hooks, resume and a lessons memory.",
+  "version": "0.2.0",
+  "author": { "name": "Mayur Ahir" }
+}

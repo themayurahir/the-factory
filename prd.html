@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Software Factory: PRD &amp; Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f2ea; --surface: #fbf8f2; --ink: #1d1b17; --muted: #6b645a;
+  --rule: #d8d0c2; --line: #8a8173; --accent: #b4441c; --accent-soft: rgba(180,68,28,.10);
+  --serif: "Fraunces", Georgia, serif; --sans: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16140f; --surface: #1e1b15; --ink: #ece6da; --muted: #a39a8c;
+    --rule: #3a352d; --line: #8f8676; --accent: #e2774a; --accent-soft: rgba(226,119,74,.14);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16140f; --surface: #1e1b15; --ink: #ece6da; --muted: #a39a8c;
+  --rule: #3a352d; --line: #8f8676; --accent: #e2774a; --accent-soft: rgba(226,119,74,.14);
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--sans); }
+main { max-width: 760px; margin: 0 auto; padding: 56px 16px 96px; }
+header { border-bottom: 3px double var(--rule); padding-bottom: 28px; margin-bottom: 8px; }
+.kicker { font: 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0 0 18px; }
+h1 { font: 600 clamp(2.2rem, 1.4rem + 4vw, 3.6rem)/1.02 var(--serif); letter-spacing: -.02em; margin: 0 0 14px; }
+.byline { font: 13px/1.4 var(--mono); color: var(--muted); margin: 0; }
+.lead { font: 400 1.35rem/1.45 var(--serif); margin: 28px 0 0; }
+section { padding-top: 40px; }
+h2 { font: 600 1.6rem/1.2 var(--serif); margin: 0 0 12px; display: flex; gap: 12px; align-items: baseline; }
+h2 .n { font: 12px/1 var(--mono); color: var(--accent); min-width: 22px; }
+h3 { font: 600 13px/1.3 var(--sans); margin: 24px 0 6px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+p { margin: 0 0 12px; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font: .88em var(--mono); background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+ul, ol { padding-left: 1.3em; margin: 0 0 12px; }
+li { margin: 4px 0; }
+.io { display: grid; grid-template-columns: 7.5em 1fr; gap: 6px 16px; margin: 16px 0 0; padding: 16px 18px; background: var(--surface); border-left: 3px solid var(--accent); }
+.io dt { font: 600 12px/1.9 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.io dd { margin: 0; }
+.flow { counter-reset: s; list-style: none; padding: 0; }
+.flow li { counter-increment: s; position: relative; padding: 10px 0 10px 48px; border-top: 1px solid var(--rule); margin: 0; }
+.flow li::before { content: counter(s, decimal-leading-zero); position: absolute; left: 0; top: 11px; font: 13px var(--mono); color: var(--muted); }
+.gate-tag { display: inline-block; font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); border: 1.5px solid var(--accent); border-radius: 3px; padding: 3px 6px; margin-left: 6px; vertical-align: 2px; }
+.tbl { overflow-x: auto; margin: 16px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th { text-align: left; font: 600 11px/1.3 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border-bottom: 2px solid var(--ink); padding: 8px 10px 8px 0; }
+td { border-bottom: 1px solid var(--rule); padding: 9px 10px 9px 0; vertical-align: top; }
+td:first-child { font-weight: 600; }
+.wide td, .wide th { font-size: 13px; }
+.wide table { min-width: 680px; }
+.fit { font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.fit-high { color: var(--accent); }
+.fit-med { color: var(--ink); }
+.fit-low { color: var(--muted); }
+.proposed { font: 600 10px/1 var(--mono); color: var(--accent); letter-spacing: .1em; }
+.callout { padding: 14px 18px; background: var(--surface); border-left: 3px solid var(--accent); margin: 12px 0 0; }
+figure { margin: 20px 0 8px; overflow-x: auto; }
+figure svg { display: block; width: 100%; min-width: 560px; height: auto; }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.d text { fill: var(--ink); font-family: var(--sans); }
+.d .q { fill: var(--muted); }
+.d .t { font-family: var(--serif); font-weight: 600; }
+.d .box { fill: var(--surface); stroke: var(--line); stroke-width: 1.25; }
+.d .hot { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.d .wire { fill: none; stroke: var(--line); stroke-width: 1.25; }
+.d .loop { fill: none; stroke: var(--accent); stroke-width: 1.25; stroke-dasharray: 5 4; }
+.d .zone { fill: none; stroke: var(--line); stroke-width: 1.25; stroke-dasharray: 6 5; }
+.d .ah { fill: var(--line); }
+.d .ah-hot { fill: var(--accent); }
+.checks { list-style: none; padding: 0; }
+.checks li { padding-left: 30px; position: relative; }
+.checks input { position: absolute; left: 0; top: 5px; width: 16px; height: 16px; accent-color: var(--accent); }
+footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--rule); font: 12px/1.6 var(--mono); color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="kicker">Product requirements · plan</p>
+  <h1>Software Factory: PRD &amp; Plan</h1>
+  <p class="byline">As of 2026-10-03 · Draft for review</p>
+  <p class="lead">Give it one vague idea. Get back a working, tested, reviewed repo and a report of what was built and why.</p>
+</header>
+
+<section id="vision" aria-labelledby="h-vision">
+  <h2 id="h-vision"><span class="n">01</span>Vision and problem</h2>
+  <p>Today a person drives every step: research, spec, plan, code, review, test. Agents can now do each step well. Nothing chains them together with shared memory, quality gates and a budget.</p>
+  <p>The factory is that chain: an orchestrator plus a set of agent roles. The coding itself is handed to Claude.</p>
+  <dl class="io">
+    <dt>Input</dt><dd>One or two sentences, in any form.</dd>
+    <dt>Output</dt><dd>A git repo with code, tests and a README; the PRD and plan; a run report covering decisions, cost and gaps.</dd>
+    <dt>Your role</dt><dd>Answer up to 5 clarifying questions. Approve the spec. Approve the release.</dd>
+  </dl>
+</section>
+
+<section id="goals" aria-labelledby="h-goals">
+  <h2 id="h-goals"><span class="n">02</span>Goals, non-goals and metrics</h2>
+  <h3>Goals</h3>
+  <ul>
+    <li>Idea to running repo end to end, unattended between gates.</li>
+    <li>Resumable runs: a crash or a stop picks up at the last finished stage.</li>
+    <li>Every stage leaves an artifact on disk.</li>
+  </ul>
+  <h3>Non-goals for the MVP</h3>
+  <ul>
+    <li>Multi-tenant SaaS.</li>
+    <li>Any UI beyond the CLI and the HTML report.</li>
+    <li>Deploying to production.</li>
+    <li>Mobile apps.</li>
+    <li>Editing large existing codebases.</li>
+  </ul>
+  <h3>Metrics</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Metric</th><th>Proposed target</th></tr></thead>
+    <tbody>
+      <tr><td>Runs that produce a repo that boots and passes its tests</td><td>≥70% on an eval set of 10 ideas <span class="proposed">PROPOSED</span></td></tr>
+      <tr><td>Human touch points per run</td><td>≤3 <span class="proposed">PROPOSED</span></td></tr>
+      <tr><td>Cost per run</td><td>Budget cap, e.g. $20, configurable <span class="proposed">PROPOSED</span></td></tr>
+      <tr><td>Wall-clock time for a small app</td><td>&lt;2 h <span class="proposed">PROPOSED</span></td></tr>
+      <tr><td>Review findings left at CRITICAL/HIGH</td><td>0 <span class="proposed">PROPOSED</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="flow" aria-labelledby="h-flow">
+  <h2 id="h-flow"><span class="n">03</span>Core flow</h2>
+  <ol class="flow">
+    <li><strong>Intake.</strong> The idea gets at most 5 clarifying questions. <span class="gate-tag">Gate: you answer</span></li>
+    <li><strong>Deep research.</strong> Prior art, libraries and risks, with sources.</li>
+    <li><strong>Spec / PRD.</strong> What gets built, for whom, and the acceptance criteria. <span class="gate-tag">Gate: you approve</span></li>
+    <li><strong>Plan.</strong> Architecture plus a task graph with acceptance tests per task.</li>
+    <li><strong>Build.</strong> Parallel builder agents in isolated git worktrees, test-first.</li>
+    <li><strong>Review.</strong> Code and security reviewers. Failures loop back to Build, max 3 loops.</li>
+    <li><strong>Verify.</strong> An independent evaluator runs the app and the tests itself.</li>
+    <li><strong>Deliver.</strong> Repo, report and release. <span class="gate-tag">Gate: you approve</span></li>
+  </ol>
+</section>
+
+<section id="pipeline" aria-labelledby="h-pipeline">
+  <h2 id="h-pipeline"><span class="n">04</span>Pipeline stages</h2>
+  <figure>
+    <svg class="d" viewBox="0 0 760 352" role="img" aria-label="Three human gates; two automatic fix loops">
+      <defs>
+        <marker id="pa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+        <marker id="pa-hot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah-hot" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <text class="t" x="24" y="32" font-size="16">Three human gates; two automatic fix loops</text>
+      <g>
+        <path class="wire" d="M136 96H164" marker-end="url(#pa)"/>
+        <path class="wire" d="M224 96H252" marker-end="url(#pa)"/>
+        <path class="wire" d="M364 96H392" marker-end="url(#pa)"/>
+        <path class="wire" d="M504 96H532" marker-end="url(#pa)"/>
+        <path class="wire" d="M592 96H620" marker-end="url(#pa)"/>
+        <path class="wire" d="M676 124V164H80V204" marker-end="url(#pa)"/>
+        <path class="wire" d="M136 232H164" marker-end="url(#pa)"/>
+        <path class="wire" d="M276 232H304" marker-end="url(#pa)"/>
+        <path class="wire" d="M416 232H444" marker-end="url(#pa)"/>
+        <path class="wire" d="M504 232H532" marker-end="url(#pa)"/>
+        <path class="loop" d="M220 260V288H100V260" marker-end="url(#pa-hot)"/>
+        <path class="loop" d="M360 260V314H60V260" marker-end="url(#pa-hot)"/>
+      </g>
+      <rect class="box" x="24" y="68" width="112" height="56" rx="8"/>
+      <text x="80" y="92" text-anchor="middle" font-size="13" font-weight="600">Intake</text>
+      <text class="q" x="80" y="110" text-anchor="middle" font-size="11">≤5 questions</text>
+      <polygon class="hot" points="164,96 194,66 224,96 194,126"/>
+      <text x="194" y="100" text-anchor="middle" font-size="10.5" font-weight="600">G1</text>
+      <text class="q" x="194" y="144" text-anchor="middle" font-size="11">you answer</text>
+      <rect class="box" x="252" y="68" width="112" height="56" rx="8"/>
+      <text x="308" y="92" text-anchor="middle" font-size="13" font-weight="600">Research</text>
+      <text class="q" x="308" y="110" text-anchor="middle" font-size="11">research.md</text>
+      <rect class="box" x="392" y="68" width="112" height="56" rx="8"/>
+      <text x="448" y="92" text-anchor="middle" font-size="13" font-weight="600">Spec / PRD</text>
+      <text class="q" x="448" y="110" text-anchor="middle" font-size="11">prd.md</text>
+      <polygon class="hot" points="532,96 562,66 592,96 562,126"/>
+      <text x="562" y="100" text-anchor="middle" font-size="10.5" font-weight="600">G2</text>
+      <text class="q" x="562" y="144" text-anchor="middle" font-size="11">you approve</text>
+      <rect class="box" x="620" y="68" width="112" height="56" rx="8"/>
+      <text x="676" y="92" text-anchor="middle" font-size="13" font-weight="600">Plan</text>
+      <text class="q" x="676" y="110" text-anchor="middle" font-size="11">tasks.json</text>
+      <rect class="box" x="24" y="204" width="112" height="56" rx="8"/>
+      <text x="80" y="228" text-anchor="middle" font-size="13" font-weight="600">Build</text>
+      <text class="q" x="80" y="246" text-anchor="middle" font-size="11">TDD, worktrees</text>
+      <rect class="box" x="164" y="204" width="112" height="56" rx="8"/>
+      <text x="220" y="228" text-anchor="middle" font-size="13" font-weight="600">Review</text>
+      <text class="q" x="220" y="246" text-anchor="middle" font-size="11">2 reviewers</text>
+      <rect class="box" x="304" y="204" width="112" height="56" rx="8"/>
+      <text x="360" y="228" text-anchor="middle" font-size="13" font-weight="600">Verify</text>
+      <text class="q" x="360" y="246" text-anchor="middle" font-size="11">independent</text>
+      <polygon class="hot" points="444,232 474,202 504,232 474,262"/>
+      <text x="474" y="236" text-anchor="middle" font-size="10.5" font-weight="600">G3</text>
+      <text class="q" x="474" y="280" text-anchor="middle" font-size="11">you approve</text>
+      <rect class="box" x="532" y="204" width="112" height="56" rx="8"/>
+      <text x="588" y="228" text-anchor="middle" font-size="13" font-weight="600">Deliver</text>
+      <text class="q" x="588" y="246" text-anchor="middle" font-size="11">repo + report</text>
+      <text class="q" x="160" y="303" text-anchor="middle" font-size="11">review fails, max 3</text>
+      <text class="q" x="210" y="332" text-anchor="middle" font-size="11">evaluator fails</text>
+    </svg>
+    <figcaption>Diamonds are human gates. Dashed lines are automatic fix loops back to Build.</figcaption>
+  </figure>
+  <p>Every artifact lives in the run's repo under <code>/factory/</code>. The next stage reads files, not chat history.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Stage</th><th>Agent role</th><th>Input</th><th>Output artifact</th><th>Done when</th></tr></thead>
+    <tbody>
+      <tr><td>Intake</td><td>intake</td><td>Your idea</td><td><code>idea.md</code></td><td>Questions answered</td></tr>
+      <tr><td>Research</td><td>researcher</td><td><code>idea.md</code></td><td><code>research.md</code></td><td>Every claim has a source</td></tr>
+      <tr><td>Spec</td><td>product (PRD)</td><td><code>idea.md</code>, <code>research.md</code></td><td><code>prd.md</code></td><td>You approve</td></tr>
+      <tr><td>Plan</td><td>architect / planner</td><td><code>prd.md</code></td><td><code>plan.md</code>, <code>tasks.json</code></td><td>Every task has acceptance tests</td></tr>
+      <tr><td>Build</td><td>builder (×N)</td><td>One task from <code>tasks.json</code></td><td>Code and tests in a worktree</td><td>Task tests pass</td></tr>
+      <tr><td>Review</td><td>reviewer + security-reviewer</td><td>The diff</td><td><code>reviews/</code></td><td>0 CRITICAL/HIGH findings</td></tr>
+      <tr><td>Verify</td><td>evaluator</td><td>The merged repo</td><td><code>reviews/verify.md</code></td><td>App boots, full suite passes</td></tr>
+      <tr><td>Deliver</td><td>release</td><td>All artifacts</td><td>Repo, <code>report.html</code></td><td>You approve</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="architecture" aria-labelledby="h-arch">
+  <h2 id="h-arch"><span class="n">05</span>Architecture</h2>
+  <h3>Delivery form</h3>
+  <p>The factory starts as a Claude Code plugin and graduates to a standalone Python orchestrator. The plugin's agents and skills are reused, not rewritten.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Form</th><th>What it is</th><th>Role in the factory</th></tr></thead>
+    <tbody>
+      <tr><td>Skill</td><td>Instructions loaded into one session</td><td>A building block: one skill per role (e.g. write PRD). Too small to be the factory: it can't enforce gates, resume or a budget.</td></tr>
+      <tr><td>Plugin</td><td>A bundle of agents, skills, a <code>/factory "&lt;idea&gt;"</code> command and hooks, installed into Claude Code</td><td>Phases 0–1. Packages the existing planner, architect, tdd-guide, reviewers and deep-research. Each stage runs as a subagent and writes <code>/factory/*.md</code>. Hooks enforce guardrails: budget, no production credentials, no destructive commands.</td></tr>
+      <tr><td>Standalone program</td><td>A Python state machine on the Claude Agent SDK</td><td>Phase 2+. Unattended multi-hour runs, deterministic resume from <code>run.json</code>, cost ledger, parallel sandboxes, CI triggers. It loads the same plugin, so only the conductor changes.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Trade-off: in the plugin, Claude itself decides the stage order. That is fine for the MVP but not reliable enough for unattended runs, so the conductor moves to code in Phase 2.</p>
+  <figure>
+    <svg class="d" viewBox="0 0 760 536" role="img" aria-label="One conductor, one plugin, one sandbox per run">
+      <defs>
+        <marker id="aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <text class="t" x="24" y="32" font-size="16">One conductor, one plugin, one sandbox per run</text>
+      <g>
+        <path class="wire" d="M144 102H184" marker-end="url(#aa)"/>
+        <path class="wire" d="M480 102H520" marker-end="url(#aa)"/>
+        <path class="wire" d="M456 148V224" marker-end="url(#aa)"/>
+        <path class="wire" d="M240 292H280" marker-end="url(#aa)"/>
+        <path class="wire" d="M480 292H520" marker-end="url(#aa)"/>
+        <path class="wire" d="M320 360V416" marker-end="url(#aa)"/>
+        <path class="wire" d="M440 360V416" marker-end="url(#aa)"/>
+      </g>
+      <text class="q" x="500" y="94" text-anchor="middle" font-size="11">logs</text>
+      <text class="q" x="464" y="172" font-size="11">dispatch stage</text>
+      <text class="q" x="260" y="284" text-anchor="middle" font-size="11">loads</text>
+      <text class="q" x="500" y="284" text-anchor="middle" font-size="11">edits</text>
+      <text class="q" x="328" y="404" font-size="11">LLM calls</text>
+      <text class="q" x="448" y="404" font-size="11">tool calls</text>
+      <rect class="box" x="24" y="56" width="120" height="92" rx="8"/>
+      <text x="84" y="96" text-anchor="middle" font-size="13" font-weight="600">You</text>
+      <text class="q" x="84" y="114" text-anchor="middle" font-size="11.5">CLI + approvals</text>
+      <rect class="hot" x="184" y="56" width="296" height="92" rx="8"/>
+      <text x="200" y="80" font-size="13" font-weight="600">Conductor</text>
+      <text x="200" y="98" font-size="11.5">/factory command (Phase 0–1)</text>
+      <text x="200" y="114" font-size="11.5">→ Python state machine (Phase 2+)</text>
+      <text class="q" x="200" y="130" font-size="11.5">resumable from /factory/ or run.json</text>
+      <rect class="box" x="520" y="56" width="216" height="92" rx="8"/>
+      <text x="536" y="80" font-size="13" font-weight="600">Ledger + budget cap</text>
+      <text x="536" y="98" font-size="11.5">tokens, cost, time per stage</text>
+      <text class="q" x="536" y="114" font-size="11.5">Phase 0–1: a hook</text>
+      <text class="q" x="536" y="130" font-size="11.5">Phase 2+: in the orchestrator</text>
+      <rect class="zone" x="24" y="184" width="712" height="200" rx="10"/>
+      <text x="40" y="208" font-size="12" font-weight="600">Sandbox</text>
+      <text class="q" x="102" y="208" font-size="11.5">Docker container per run · no production credentials</text>
+      <rect class="box" x="40" y="224" width="200" height="136" rx="8"/>
+      <text x="56" y="248" font-size="13" font-weight="600">Factory plugin</text>
+      <text x="56" y="266" font-size="11.5">agents/</text>
+      <text x="56" y="282" font-size="11.5">skills/</text>
+      <text x="56" y="298" font-size="11.5">commands/factory.md</text>
+      <text x="56" y="314" font-size="11.5">hooks/</text>
+      <rect class="box" x="280" y="224" width="200" height="136" rx="8"/>
+      <text x="296" y="248" font-size="13" font-weight="600">Agent runtime</text>
+      <text x="296" y="266" font-size="11.5">Claude Code (Phase 0–1)</text>
+      <text x="296" y="282" font-size="11.5">Agent SDK (Phase 2+)</text>
+      <text class="q" x="296" y="298" font-size="11.5">one subagent per stage</text>
+      <rect class="box" x="520" y="224" width="200" height="136" rx="8"/>
+      <text x="536" y="248" font-size="13" font-weight="600">Workspace</text>
+      <text x="536" y="266" font-size="11.5">git repo per run</text>
+      <text x="536" y="282" font-size="11.5">one worktree per builder</text>
+      <text class="q" x="536" y="298" font-size="11.5">/factory/ artifacts on disk</text>
+      <rect class="box" x="24" y="416" width="336" height="96" rx="8"/>
+      <text x="40" y="440" font-size="13" font-weight="600">Model routing</text>
+      <text x="40" y="458" font-size="11.5">claude-opus-5-5: research, spec, plan, review</text>
+      <text x="40" y="474" font-size="11.5">claude-sonnet-5-5: builders</text>
+      <text x="40" y="490" font-size="11.5">claude-haiku-4-5: cheap checks</text>
+      <rect class="box" x="400" y="416" width="336" height="96" rx="8"/>
+      <text x="416" y="440" font-size="13" font-weight="600">Tools</text>
+      <text x="416" y="458" font-size="11.5">web search and fetch</text>
+      <text x="416" y="474" font-size="11.5">GitHub</text>
+      <text x="416" y="490" font-size="11.5">MCP servers</text>
+    </svg>
+    <figcaption>The conductor only moves state. It is the /factory command in Phases 0–1 and a Python state machine from Phase 2. The runtime loads the same plugin in both. The ledger and budget cap are a hook in Phases 0–1 and move into the orchestrator in Phase 2+.</figcaption>
+  </figure>
+</section>
+
+<section id="build-vs-reuse" aria-labelledby="h-bvr">
+  <h2 id="h-bvr"><span class="n">06</span>Build vs reuse</h2>
+  <p>Build on Claude Code. Ship the MVP as a Claude Code plugin, then move the conductor to the Claude Agent SDK in Phase 2. Borrow the spec/plan ideas from Spec Kit and BMAD. Skip the stale frameworks.</p>
+  <div class="tbl wide"><table>
+    <thead><tr><th>Option</th><th>What it is</th><th>License</th><th>Stages covered</th><th>Activity (2026-10-03)</th><th>Fit</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://code.claude.com/docs/en/agent-sdk/overview">Claude Agent SDK</a></td><td>Claude Code's agent loop as a Python/TS library</td><td>MIT repo; Anthropic Commercial Terms; third-party products use API-key auth</td><td>Orchestration (subagents, hooks, resume, MCP, skills), code, review, test</td><td>8.2k stars; v0.2.163, 2026-09-30</td><td><span class="fit fit-high">High</span></td></tr>
+      <tr><td><a href="https://code.claude.com/docs/en/headless">Claude Code headless</a></td><td><code>claude -p</code> CLI on the same SDK: <code>--output-format json</code>, <code>--json-schema</code>, <code>--agents</code>, <code>--resume</code></td><td>Proprietary</td><td>Same as the SDK</td><td>149k stars; v2.1.287, 2026-10-01</td><td><span class="fit fit-high">High for MVP</span></td></tr>
+      <tr><td><a href="https://github.com/github/spec-kit">GitHub Spec Kit</a></td><td>Spec-driven commands (constitution, specify, plan, tasks, implement, converge) for any agent</td><td>MIT</td><td>Spec, plan, tasks, verify</td><td>139.8k stars; v1.1.0, 2026-10-02</td><td><span class="fit fit-high">High as spec/plan layer</span></td></tr>
+      <tr><td><a href="https://github.com/OpenHands/OpenHands">OpenHands</a></td><td>Self-hosted, model-agnostic agent platform plus SDK with Docker/K8s sandboxes</td><td>MIT</td><td>Code, test, orchestration, automations; no spec layer</td><td>89.8k stars; v1.24.0, 2026-09-25</td><td><span class="fit fit-med">Medium</span> fallback if model-agnostic</td></tr>
+      <tr><td><a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD-METHOD</a></td><td>Idea → brief → PRD → architecture → stories → code with role agents; ships as a Claude Code plugin</td><td>MIT</td><td>Research, spec, plan, orchestration, code, test</td><td>53.7k stars; v6.12.0, 2026-09-04</td><td><span class="fit fit-med">Medium</span> closest reference for intake</td></tr>
+      <tr><td><a href="https://github.com/openai/codex">OpenAI Codex CLI</a></td><td>Terminal coding agent</td><td>Apache-2.0</td><td>Code, test</td><td>127.6k stars; rust-v0.160.0, 2026-10-01</td><td><span class="fit fit-med">Medium</span> possible second worker</td></tr>
+      <tr><td><a href="https://kiro.dev">AWS Kiro</a></td><td>Agentic IDE: prompts → requirements, design, tasks; contradiction checks; property-based tests</td><td>Commercial</td><td>Spec, plan, code, test, review</td><td>—</td><td><span class="fit fit-med">Medium</span> as reference; Low as base</td></tr>
+      <tr><td><a href="https://github.com/FoundationAgents/MetaGPT">MetaGPT</a></td><td>"Code = SOP(Team)": PM, architect, engineer roles</td><td>MIT</td><td>Research, PRD, design, code</td><td>70.7k stars; last release v0.8.1, 2024-04-22</td><td><span class="fit fit-low">Low</span> stale; good role reference</td></tr>
+      <tr><td><a href="https://github.com/OpenBMB/ChatDev">ChatDev</a></td><td>Config-driven multi-agent platform</td><td>Apache-2.0</td><td>Spec, orchestration, code, test, docs</td><td>34.4k stars; v2.2.0, 2026-03-23</td><td><span class="fit fit-low">Low</span> research-grade</td></tr>
+      <tr><td><a href="https://github.com/SWE-agent/SWE-agent">SWE-agent</a></td><td>Issue → patch agent; superseded by mini-swe-agent</td><td>MIT</td><td>Code, test</td><td>20.5k stars; v1.1.0, 2025-05-22</td><td><span class="fit fit-low">Low</span> useful for SWE-bench evals</td></tr>
+      <tr><td><a href="https://github.com/Pythagora-io/gpt-pilot">GPT-Pilot</a></td><td>Spec writer → architect → developer → reviewer chain</td><td>Custom</td><td>Spec, plan, code, review</td><td>33.7k stars; unmaintained; README discloses malicious code in the repo Aug 2025 – Jun 2026</td><td><span class="fit fit-low">Low</span> do not depend on it</td></tr>
+      <tr><td><a href="https://devin.ai">Devin</a></td><td>Hosted autonomous engineer</td><td>Commercial</td><td>Plan, code, test, review</td><td>—</td><td><span class="fit fit-low">Low</span> closed; benchmark only</td></tr>
+      <tr><td><a href="https://factory.com">Factory.ai Droids</a></td><td>Agent platform across CLI, web, Slack and CI</td><td>Commercial</td><td>Plan, code, review, test, docs</td><td>—</td><td><span class="fit fit-low">Low</span> closed; benchmark only</td></tr>
+    </tbody>
+  </table></div>
+  <p>Ideas to borrow: Spec Kit's constitution→specify→plan→tasks→converge; BMAD's idea→brief→PRD→stories; Kiro's requirement contradiction checks and property-based tests; MetaGPT/GPT-Pilot role chains.</p>
+  <h3>Already on this machine</h3>
+  <div class="callout">
+    <p>Your <code>~/.claude</code> already has agents and skills that map onto factory roles. The MVP should wrap these, not rewrite their prompts.</p>
+    <ul>
+      <li><strong>Agents:</strong> planner, architect, tdd-guide, code-reviewer, security-reviewer, gan-planner / gan-generator / gan-evaluator, e2e-runner.</li>
+      <li><strong>Skills:</strong> deep-research, prp-prd, prp-plan, prp-implement, santa-loop.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="roadmap" aria-labelledby="h-roadmap">
+  <h2 id="h-roadmap"><span class="n">07</span>MVP and roadmap</h2>
+  <figure>
+    <svg class="d" viewBox="0 0 760 326" role="img" aria-label="Prove one stack end to end before scaling out">
+      <defs>
+        <marker id="ra" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+      </defs>
+      <text class="t" x="24" y="32" font-size="16">Prove one stack end to end before scaling out</text>
+      <rect class="hot" x="24" y="56" width="160" height="184" rx="8"/>
+      <text class="q" x="40" y="78" font-size="11">PHASE 0 · MVP</text>
+      <text x="40" y="98" font-size="13" font-weight="600">Walking skeleton</text>
+      <text x="40" y="114" font-size="13" font-weight="600">as a plugin</text>
+      <text x="40" y="140" font-size="11.5">/factory command</text>
+      <text x="40" y="156" font-size="11.5">one stack: Python</text>
+      <text x="40" y="172" font-size="11.5">one builder</text>
+      <text x="40" y="188" font-size="11.5">local, in Claude Code</text>
+      <rect class="box" x="208" y="56" width="160" height="184" rx="8"/>
+      <text class="q" x="224" y="78" font-size="11">PHASE 1</text>
+      <text x="224" y="98" font-size="13" font-weight="600">Quality loops</text>
+      <text x="224" y="124" font-size="11.5">reviewer + evaluator</text>
+      <text x="224" y="140" font-size="11.5">loops</text>
+      <text x="224" y="156" font-size="11.5">3 human gates</text>
+      <text x="224" y="172" font-size="11.5">resume from /factory/</text>
+      <text x="224" y="188" font-size="11.5">budget hook</text>
+      <rect class="box" x="392" y="56" width="160" height="184" rx="8"/>
+      <text class="q" x="408" y="78" font-size="11">PHASE 2</text>
+      <text x="408" y="98" font-size="13" font-weight="600">Scale</text>
+      <text x="408" y="124" font-size="11.5">Python SDK conductor</text>
+      <text x="408" y="140" font-size="11.5">replaces /factory</text>
+      <text x="408" y="156" font-size="11.5">parallel builders</text>
+      <text x="408" y="172" font-size="11.5">in worktrees</text>
+      <text x="408" y="188" font-size="11.5">+ Next.js stack</text>
+      <text x="408" y="204" font-size="11.5">Docker sandbox</text>
+      <text x="408" y="220" font-size="11.5">lessons memory</text>
+      <rect class="box" x="576" y="56" width="160" height="184" rx="8"/>
+      <text class="q" x="592" y="78" font-size="11">PHASE 3</text>
+      <text x="592" y="98" font-size="13" font-weight="600">Ship</text>
+      <text x="592" y="124" font-size="11.5">deploy target</text>
+      <text x="592" y="140" font-size="11.5">run dashboard (HTML)</text>
+      <text x="592" y="156" font-size="11.5">eval suite in CI</text>
+      <path class="wire" d="M24 260H736" marker-end="url(#ra)"/>
+      <polygon class="hot" points="196,250 206,260 196,270 186,260"/>
+      <text x="196" y="288" text-anchor="middle" font-size="11.5" font-weight="600">Gate 1</text>
+      <text class="q" x="196" y="304" text-anchor="middle" font-size="11">3 of 5 sample ideas pass</text>
+      <polygon class="hot" points="380,250 390,260 380,270 370,260"/>
+      <text x="380" y="288" text-anchor="middle" font-size="11.5" font-weight="600">Gate 2</text>
+      <text class="q" x="380" y="304" text-anchor="middle" font-size="11">eval set ≥70%</text>
+    </svg>
+    <figcaption>Phases are in order, not to scale. Phase 0 is the first build target.</figcaption>
+  </figure>
+  <h3>Phase 0 tasks</h3>
+  <ul class="checks">
+    <li><input type="checkbox" aria-label="done"> Plugin scaffold: <code>plugin.json</code>, <code>agents/</code>, <code>skills/</code>, <code>commands/factory.md</code>.</li>
+    <li><input type="checkbox" aria-label="done"> Wire the existing agents and skills to the stages: deep-research, prp-prd, planner / prp-plan, prp-implement / tdd-guide.</li>
+    <li><input type="checkbox" aria-label="done"> Stage artifact contract: each stage reads and writes its files under <code>/factory/</code>.</li>
+    <li><input type="checkbox" aria-label="done"> Intake: at most 5 questions, answers saved to <code>idea.md</code>.</li>
+    <li><input type="checkbox" aria-label="done"> Run pytest; write <code>report.html</code>.</li>
+    <li><input type="checkbox" aria-label="done"> Run one sample idea end to end.</li>
+    <li><input type="checkbox" aria-label="done"> Run 5 sample ideas; record pass or fail for Gate 1.</li>
+  </ul>
+</section>
+
+<section id="risks" aria-labelledby="h-risks">
+  <h2 id="h-risks"><span class="n">08</span>Risks and guardrails</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>A vague idea leads to the wrong product</td><td>Clarifying questions at intake, then the spec gate.</td></tr>
+      <tr><td>Runaway cost or loops</td><td>Budget cap, max iterations per stage, stall detection.</td></tr>
+      <tr><td>Agents grade their own work</td><td>A separate evaluator runs the tests itself.</td></tr>
+      <tr><td>Destructive or unsafe actions</td><td>Sandbox, no production credentials, worktrees, release gate.</td></tr>
+      <tr><td>Quality falls off on big apps</td><td>MVP scope capped at small apps; task graph with acceptance tests.</td></tr>
+      <tr><td>Context lost across stages</td><td>Every stage writes an artifact to disk; the next stage reads files, not chat.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="questions" aria-labelledby="h-q">
+  <h2 id="h-q"><span class="n">09</span>Open questions for you</h2>
+  <ul class="checks">
+    <li><input type="checkbox" aria-label="decided"> First target stack: Python, or Next.js / TypeScript?</li>
+    <li><input type="checkbox" aria-label="decided"> Where it runs: local Windows machine, WSL / Docker, or cloud?</li>
+    <li><input type="checkbox" aria-label="decided"> Budget per run?</li>
+    <li><input type="checkbox" aria-label="decided"> How autonomous: 3 gates, or fewer?</li>
+    <li><input type="checkbox" aria-label="decided"> Delivery target: local repo, or a GitHub repo plus PR?</li>
+    <li><input type="checkbox" aria-label="decided"> What is the first real idea to test it on?</li>
+    <li><input type="checkbox" aria-label="decided"> Plugin name and where it lives (your <code>~/.claude</code>, or its own git repo)?</li>
+  </ul>
+</section>
+
+<footer>
+  <p>Sources: facts in the Build vs reuse table were taken from the linked pages and the GitHub API on 2026-10-03.</p>
+  <p>Software Factory · PRD draft · 2026-10-03</p>
+</footer>
+</main>
+</body>
+</html>
