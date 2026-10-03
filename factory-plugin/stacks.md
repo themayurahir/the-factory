@@ -73,12 +73,12 @@ Fields: **detect** (words in the idea/PRD), **layout**, **setup**, **test**, **l
 - test skill: `CC/.agents/skills/tdd-workflow/SKILL.md` | typed: yes
 - verify: `dotnet run --project src/<App> -- --help` + ACs.
 
-## Add-ons (decided from the `DB:`, `UI:` and `ML:` lines of `F/plan.md`)
+## Add-ons (decided from the `UI:` line of `F/prd.md` and the `DB:` and `ML:` lines of `F/plan.md`)
 
 | When | Agent / skill | Where |
 |---|---|---|
 | `DB:` is not `none` (SQL, SQLite, ORM) | `database-reviewer` (report only) | Plan (schema review) and Review round 1 |
-| `UI: web` | `frontend-design:frontend-design` skill -> `F/design.md` | Plan; Build reads it |
+| `UI:` is not `none` | `general-purpose` + `frontend-design` + `design-quality` -> `F/design/`, `F/design.md` | Design; Plan, Build, Review, Verify, Deliver read it |
 | `UI: web` | `e2e-runner` + `e2e` skill (Playwright) | Verify |
 | `ML: yes` (python) | `pytorch-build-resolver` | Build / Verify failures |
 
@@ -89,6 +89,8 @@ Fields: **detect** (words in the idea/PRD), **layout**, **setup**, **test**, **l
 | prompt-optimize | `CC/commands/prompt-optimize.md` | Advisory only. Its target skill `prompt-optimizer` is not installed, so apply the shim's rules. |
 | deep-research | Skill `anthropic-skills:deep-research` | No AskUserQuestion; files under `F/`; report to `F/research.md`; researcher cap (see factory.md). |
 | prp-prd | `CC/commands/prp-prd.md` | Skip every GATE: answer its questions from `F/idea.md` + `F/research.md`; write `F/prd.md`, not `.claude/PRPs/`. |
+| frontend-design | Skill `frontend-design:frontend-design` | Write only under `F/design/` and `F/design.md`; no questions. |
+| design-quality | `CC/rules/web/design-quality.md` + `CC/rules/web/coding-style.md` (CSS tokens) | none |
 | prp-plan | `CC/commands/prp-plan.md` | Never STOP to ask: state assumptions; return the plan text (planner is read-only). |
 | tdd | `CC/.agents/skills/tdd-workflow/SKILL.md` | none |
 | prp-implement | `CC/commands/prp-implement.md` | Use phases 3-4 (validate after every task) only. Plan is `F/plan.md`; no branch/stash checks, no archiving, report into `F/build-log.md`. |

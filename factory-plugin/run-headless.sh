@@ -45,7 +45,7 @@ for c in "${CMDS[@]}"; do ALLOW+=("Bash($c)" "PowerShell($c)"); done
 # Method files (skills/agents/commands) and the plugin itself live outside the runs folder: read-only access.
 ALLOW+=("Read(~/.claude/commands/**)" "Read(~/.claude/agents/**)" "Read(~/.claude/.agents/skills/**)"
         "Read(~/.claude/skills/**)" "Read(~/.claude/plugins/cache/**)" "Read(//${PLUGIN#/}/**)"
-        "Skill" "WebSearch" "WebFetch(domain:*)")
+        "Read(~/.claude/rules/**)" "Skill" "WebSearch" "WebFetch(domain:*)")
 
 mkdir -p "$RUNS" && cd "$RUNS"
 # One spelling for the conductor, guard.js and Claude's cwd: absolute, long names (no MAYURA~1), forward slashes.

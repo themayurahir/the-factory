@@ -35,17 +35,20 @@ Raw arguments: `$ARGUMENTS`
 | 2 Research | `F/research.md` |
 | 3 PRD | `F/prd.md` with a `Stack:` line |
 | G2 PRD approval | a `g2: done` line in `F/run-log.md` |
-| 4 Plan | `F/plan.md` (and `F/design.md` when `UI: web`) |
-| 5 Build | `F/build-log.md` with a `BUILD:` line |
-| 6 Review | `F/reviews/summary.md` with a `REVIEW: CLOSED` line |
-| 7 Verify | `F/verify.md` with a `VERIFY:` line |
+| 4 Design | `F/design.md` with a `DESIGN:` line, or a `design: skipped` line in `F/run-log.md` |
+| GD Design approval (`[ui]` only) | a `gd: done` line in `F/run-log.md` |
+| 5 Plan | `F/plan.md` |
+| 6 Build | `F/build-log.md` with a `BUILD:` line |
+| 7 Review | `F/reviews/summary.md` with a `REVIEW: CLOSED` line |
+| 8 Verify | `F/verify.md` with a `VERIFY:` line |
 | G3 Release approval | a `g3: done` line in `F/run-log.md` |
-| 8 Deliver | `F/report.md` and a commit in `RUN` |
-| 9 Learn | a `learn:` line in `F/run-log.md` |
+| 9 Deliver | `F/report.md` and a commit in `RUN` |
+| 10 Learn | a `learn:` line in `F/run-log.md` |
 
-**Gates** G2 and G3 ask you to approve (AskUserQuestion). With `AUTO` they are skipped (log `g<n>: skipped - auto`),
-and a gate also counts as passed when a later stage's done-marker exists. **Stop** at a gate: log `g<n>: stopped`,
-reply with `RUN` and `/factory --resume "<RUN>"`, and end the run; a resumed run asks that gate again.
+**Gates** G2, GD and G3 ask you to approve (AskUserQuestion). With `AUTO` they are skipped (log `<gate>: skipped - auto`),
+and a gate (or Design, which older runs lack) also counts as passed when a later stage's done-marker exists.
+**Stop** at a gate: log `<gate>: stopped`, reply with `RUN` and `/factory --resume "<RUN>"`, and end the run; a
+resumed run asks that gate again.
 
 **Profile:** `P` = the stacks.md profile named by the PRD's `Stack:` line (before the PRD: the intake stack hint).
 `P.test`, `P.lint`, `P.reviewer`, `P.fixer` etc. mean that profile's fields.
@@ -69,7 +72,7 @@ headless override". Plan and Build prompts also say: "If `<RUNS_ROOT>/lessons.md
 `all` or `<P>`".
 
 **Tiers.** Default: everything below not marked `[thorough]`. `[thorough]` steps run only when `THOROUGH`.
-`[web]` = `UI: web` in the plan, `[db]` = `DB:` not `none`, `[typed]` = profile is typed, `[ml]` = `ML: yes`.
+`[ui]` = the PRD's `UI:` is not `none`, `[web]` = `UI: web`, `[db]` = `DB:` not `none`, `[typed]` = profile is typed, `[ml]` = `ML: yes`.
 
 ## 1. Intake -> `F/idea.md` (you)
 
@@ -95,8 +98,9 @@ append its answer to `F/research.md` under `## Current library docs`. Otherwise 
 
 Prompt: Method: `prp-prd`. Inputs `F/idea.md`, `F/research.md`. Keep its template but also include: a line exactly
 `Stack: <profile>` (one of the stacks.md profiles; the idea's hint unless research shows it cannot work), Users,
-User stories `US-1..`, Acceptance criteria `AC-1..` (concrete and testable: commands or UI steps with expected
-output/exit code), Out of scope. Small enough for one sitting (3-6 user stories). Write `F/prd.md`.
+User stories `US-1..`, a line exactly `UI: <web|mobile|desktop|none>`, Acceptance criteria `AC-1..` (concrete and
+testable: commands or UI steps with expected output/exit code), Out of scope. Small enough for one sitting (3-6 user
+stories). Write `F/prd.md`.
 Then set `P` from the `Stack:` line.
 
 **G2 (you approve the PRD)**, unless `AUTO`: show a summary of `F/prd.md` (max ~10 lines: Stack, users, user story
@@ -105,24 +109,59 @@ Request changes: take their notes (ask for them if empty), rerun the PRD agent w
 `F/research.md`, `F/prd.md` and these change requests: <notes>. Revise `F/prd.md`, same format.", log
 `prd: done - revised`, reset `P`, ask G2 again. Stop: see **Gates**.
 
-## 4. Plan -> `F/plan.md`
+## 4. Design -> `F/design.md` + `F/design/` (`general-purpose`, `[ui]` only)
+
+If the PRD's `UI:` is `none` (an older PRD without the line: judge from its Stack and user stories), log
+`design: skipped - no UI` and go to Plan.
+
+1. `general-purpose` (it writes files). Prompt: Methods: `frontend-design`, `design-quality`. Inputs `F/idea.md`,
+   `F/prd.md` (+ prior art in `F/research.md`). Write under `F/design/`:
+   - `brand.md`: 3 product name options and the pick (keep the idea's name if it has one), tagline, voice/tone; a
+     style direction from design-quality's list (never "clean minimal") with rationale; palette with semantic roles
+     (background, surface, text, muted, accent, success, warning, danger) in light and dark values with WCAG AA
+     contrast notes; a Google Fonts type pairing; spacing, radius, shadow and motion scales.
+   - `tokens.css`: all of it as CSS custom properties on `:root`, dark values under
+     `@media (prefers-color-scheme: dark)` and `[data-theme="dark"]`. If the stack styles another way (Tailwind for
+     Next.js, Flutter `ThemeData`, ...), also `tokens.<ext>` mapping to the same values.
+   - `logo.svg`, `favicon.svg`: simple hand-written SVG in the palette.
+   - `layouts.md`: screen inventory from the user stories (US ids); per screen the layout and component list;
+     navigation; empty, loading and error states.
+   - `mockups/<screen>.html`: one static mockup per key screen (max 5), linking `../tokens.css` and using only its
+     variables, no JS frameworks, realistic sample content, responsive down to 320px, light and dark. These are the
+     visual source of truth for Build.
+
+   Then write `F/design.md`: one line per file above (relative links), last line exactly
+   `DESIGN: screens=<n> direction=<name>`. Log `design: done - <DESIGN line>`.
+2. `[thorough]` `general-purpose` critic: "Method `design-quality`. Read `F/design/` (do not write files). Return
+   the banned patterns hit, missing required qualities (need 4+) and contrast failures; last line exactly
+   `CRITIQUE: <PASS|FIX> issues=<n>`." Save to `F/design/critique.md`. If `FIX`: rerun step 1 once with "Revise
+   `F/design/` and `F/design.md` per `F/design/critique.md`".
+
+**GD (you approve the design)**, unless `AUTO`: show a summary (max ~10 lines: name, direction, palette roles with
+hex values, type pairing, screens, mockup paths to open in a browser) and ask: Approve / Request changes / Stop.
+Approve: log `gd: done - approved`. Request changes: take their notes (ask for them if empty), rerun step 1 with
+"Inputs as before plus `F/design/` and these change requests: <notes>. Revise the files, same format.", log
+`design: done - revised`, ask GD again. Stop: see **Gates**.
+
+## 5. Plan -> `F/plan.md`
 
 1. `planner` (read-only; save its reply verbatim to `F/plan.md`). Prompt: Method: `prp-plan`. Inputs `F/prd.md`,
-   `F/research.md`, profile `P` in `PLUGIN/stacks.md` (layout, commands). Return only markdown that starts with four
-   lines: `Stack: <P>`, `UI: <web|mobile|none>`, `DB: <sqlite|sql|orm|none>`, `ML: <yes|no>`; then module layout,
-   data model, ordered tasks `T1..Tn` (each 1 module or 1 command) listing files, AC ids covered and named
-   acceptance tests. Every AC covered. Last task: README + help text.
+   `F/research.md` (+ `F/design.md` and the files it links if `[ui]`), profile `P` in `PLUGIN/stacks.md` (layout,
+   commands). Return only markdown that starts with four lines: `Stack: <P>`, `UI: <the PRD's UI>`,
+   `DB: <sqlite|sql|orm|none>`, `ML: <yes|no>`; then module layout, data model, ordered tasks `T1..Tn` (each 1 module
+   or 1 command) listing files, AC ids covered and named acceptance tests. Every AC covered. `[ui]`: an early task
+   copies `F/design/tokens.css` (and its stack form) into the app and imports it once globally; each UI task names
+   its `F/design/mockups/<screen>.html` and `layouts.md` section. Last task: README + help text.
 2. Architecture, in parallel, each returns text you append to `F/plan.md` under `## Architecture review` / `## Schema review`:
    `architect` when `UI` is not `none` or `DB` is not `none` (component boundaries, data flow, risks);
    `[db]` `database-reviewer` (schema, indexes, constraints; report only); `[thorough]` `code-architect`
    (blueprint: files, interfaces, build order). If a review raises a blocking issue, rerun the planner once with it.
-3. `[web]` `general-purpose`: load the `frontend-design:frontend-design` skill; read `F/prd.md` + `F/plan.md`;
-   write `F/design.md` (aesthetic direction, palette tokens, type pairing, layout and states per screen).
 
-## 5. Build -> `F/build-log.md` (`tdd-guide`)
+## 6. Build -> `F/build-log.md` (`tdd-guide`)
 
-1. `tdd-guide`. Prompt: Inputs `F/plan.md`, `F/prd.md` (+ `F/design.md` if `[web]`). Methods: `P.test skill`,
-   `prp-implement`, `test-coverage`; Read them first and list them under `## Methods read` in the build log.
+1. `tdd-guide`. Prompt: Inputs `F/plan.md`, `F/prd.md` (+ `F/design.md` if `[ui]`: UI code uses the design
+   tokens, never hard-coded colors or sizes, and matches `F/design/mockups/` and `F/design/layouts.md`).
+   Methods: `P.test skill`, `prp-implement`, `test-coverage`; Read them first and list them under `## Methods read` in the build log.
    Run `P.setup`. Implement tasks in order, **tests first**: write the task's
    tests, see them fail, implement, run `P.test` and `P.lint` and see them pass, then the next task. Tests never
    touch real user data (temp dirs). Finally run `P.cover` and add tests until 80%+ (or `n/a`). Write
@@ -135,13 +174,15 @@ Request changes: take their notes (ask for them if empty), rerun the PRD agent w
    `F/design.md`) and `RUN/gan-harness/eval-rubric.md` (from the ACs), then follow `CC/commands/gan-build.md` with
    `--skip-planner --max-iterations 3 --pass-threshold 7`; generator and evaluator do not commit.
 
-## 6. Review -> `F/reviews/` (max 2 fix loops)
+## 7. Review -> `F/reviews/` (max 2 fix loops)
 
 Before round 1, Glob the project's source, test and config files (exclude `.venv`, `node_modules`, `target`,
 `build`, `dist`, `.gradle`, `.dart_tool`, `bin`, `obj`, `factory`) and put the **absolute paths in every
 reviewer prompt**; tell reviewers to Read those paths directly (Glob can miss files on Windows).
 Common prompt: review those files against `F/prd.md`; return (do not write) a findings table: severity
 (CRITICAL/HIGH/MEDIUM/LOW), file:line, issue, fix. Max ~60 lines. Last line exactly `VERDICT: CRITICAL=<n> HIGH=<n>`.
+`[ui]`, `P.reviewer` only, also: UI vs `F/design/layouts.md` and the tokens (hard-coded hex colors or px sizes
+outside the tokens file: MEDIUM; a missing screen or empty/loading/error state: HIGH).
 
 Round `N` (start at 1), all reviewers in parallel; save each reply to `F/reviews/<agent>-N.md`:
 - always: `P.reviewer` (Method: `code-review`), `security-reviewer` (Method: `security-review`; tell it **report
@@ -163,10 +204,12 @@ rounds, no commits, never push). Save `F/reviews/santa.md` ending `SANTA: <NICE|
 Close: write `F/reviews/summary.md` (rounds, each reviewer's last VERDICT) ending exactly
 `REVIEW: CLOSED rounds=<n> open_critical=<c> open_high=<h>`.
 
-## 7. Verify -> `F/verify.md` (only after `REVIEW: CLOSED` exists)
+## 8. Verify -> `F/verify.md` (only after `REVIEW: CLOSED` exists)
 
 1. `[web]` `e2e-runner`: Method: `e2e`. Write Playwright tests in `RUN/e2e/` for the PRD's critical journeys, run
-   them, return a summary + pass/fail counts; save to `F/e2e.md`.
+   them, return a summary + pass/fail counts; save to `F/e2e.md`. Also compare each screen with its
+   `F/design/mockups/<screen>.html`: key elements present, tokens applied (e.g. computed background and font match
+   `F/design/tokens.css`); screenshot each to `RUN/e2e/screenshots/`.
 2. `general-purpose`, the independent evaluator. Prompt: "Do not trust `F/build-log.md` or any builder claim; get all
    evidence yourself. Do not edit any file except `F/verify.md`. Methods: `verify`, `run`, `test-coverage` (measure
    only)`<, quality-gate if THOROUGH>`. Steps: 1. run `P.setup` only if the environment is missing. 2. `P.test`
@@ -185,15 +228,17 @@ coverage, app ran), failed ACs, the REVIEW line (open CRITICAL/HIGH) and what De
 `RUN` as `feat: <SLUG> built by software factory`, and if `PR` push branch `factory/<SLUG>` and open a PR (else
 nothing is pushed). Ask: Approve / Stop. Approve: log `g3: done - approved`. Stop: see **Gates**.
 
-## 8. Deliver -> `F/report.md` + commit
+## 9. Deliver -> `F/report.md` + commit
 
 1. `doc-updater`: Methods `update-docs`, `update-codemaps` (override in stacks.md). Update `RUN/README.md` (setup,
    commands from source of truth, tests) and write `RUN/docs/CODEMAPS/architecture.md` (+ `data.md` if `[db]`,
-   `frontend.md` if `[web]`). Never touch `F/`.
+   `frontend.md` if `[web]`). `[ui]`: copy `F/design/logo.svg` and `favicon.svg` into the app's static folder
+   (e.g. `public/`) with Read + Write if not there yet, and add a `## Brand` README section linking
+   `factory/design/brand.md` and the mockups. Never touch `F/`.
 2. `OSS`: `opensource-packager` on `RUN` (CLAUDE.md, setup.sh, LICENSE MIT, CONTRIBUTING.md, issue templates;
    merge into the README, do not replace it).
 3. Write `F/report.md` yourself from the files: what was built (2-4 lines) + AC summary from `F/verify.md`; key
-   decisions (stack, libraries, assumptions, plan choices); how to run (setup, help, one example, tests); known gaps
+   decisions (stack, libraries, design direction, assumptions, plan choices); how to run (setup, help, one example, tests); known gaps
    (open MEDIUM+ findings, failed ACs, gan scores < 7, out of scope); tier used; stages (copy `F/run-log.md`);
    last, keep any `Cost:` lines an older `F/report.md` had, then add `Cost: n/a (interactive; check /cost)`
    (`run-headless.sh` replaces it with the real cost).
@@ -203,7 +248,7 @@ nothing is pushed). Ask: Approve / Stop. Approve: log `g3: done - approved`. Sto
 5. `PR`: if `git -C "<RUN>" remote get-url origin` succeeds, follow `prp-pr` (push `-u origin HEAD`, `gh pr create`);
    else log `pr: skipped - no origin remote`.
 
-## 9. Learn -> `<RUNS_ROOT>/lessons.md` (`general-purpose`)
+## 10. Learn -> `<RUNS_ROOT>/lessons.md` (`general-purpose`)
 
 Prompt: "Methods `learn` and `learn-eval` (override: no confirmation; write to `<RUNS_ROOT>/lessons.md`, never
 `~/.claude`). Read `F/run-log.md`, `F/build-log.md`, `F/reviews/summary.md`, the last review files and

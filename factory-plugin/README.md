@@ -4,8 +4,16 @@ Claude Code plugin. `/factory "<idea>"` turns a vague idea into a tested, review
 `$FACTORY_RUNS/<slug>/` (default `D:/workspace/factory-runs`), with every stage's artifact in `<slug>/factory/`.
 
 Stages (each reads the previous stage's files): intake (`idea.md`) -> research (`research.md`) -> PRD (`prd.md`)
--> plan (`plan.md`, `design.md` for web UIs) -> build (`build-log.md`) -> review (`reviews/`, max 2 fix loops)
--> verify (`verify.md`) -> deliver (`report.md` + commit) -> learn (`$FACTORY_RUNS/lessons.md`).
+-> design (apps with a UI: `design.md` + `design/`) -> plan (`plan.md`) -> build (`build-log.md`) -> review
+(`reviews/`, max 2 fix loops) -> verify (`verify.md`) -> deliver (`report.md` + commit) -> learn
+(`$FACTORY_RUNS/lessons.md`).
+
+Design outputs (`factory/design/`, skipped when the PRD says `UI: none`): `brand.md` (name options + pick, tagline,
+voice, style direction, palette with light/dark values and contrast notes, type pairing, spacing/radius/shadow/motion
+scales), `tokens.css` (+ a stack form such as a Tailwind theme), `logo.svg`, `favicon.svg`, `layouts.md` (screens,
+components, navigation, empty/loading/error states) and `mockups/<screen>.html` (static, responsive, light/dark; the
+visual source of truth). Plan, build, review, verify and deliver all read them; deliver copies the logo/favicon into
+the app and links `brand.md` from the README.
 
 Files: `commands/factory.md` (conductor), `stacks.md` (stack profiles, add-ons, method files and their headless
 overrides; read at runtime), `hooks/` (guardrails), `run-headless.sh`, `eval/` (Gate 1 harness).
@@ -33,9 +41,9 @@ Headless (no questions; assumptions go to `idea.md`):
 | `--oss` | Adds open-source packaging (LICENSE, CONTRIBUTING, setup.sh, CLAUDE.md, issue templates) |
 
 Gates (interactive only; `--auto` skips them): G1 you answer the intake questions; G2 you approve the PRD (approve,
-request changes = revise and ask again, or stop); G3 you approve the release after Verify, before the commit/PR
-(approve or stop). Approvals are logged as `g2: done` / `g3: done` in `run-log.md`, so `--resume` does not re-ask
-them; a stopped run resumes at the gate.
+request changes = revise and ask again, or stop); GD you approve the design (same choices; UI apps only); G3 you
+approve the release after Verify, before the commit/PR (approve or stop). Approvals are logged as `g2: done` /
+`gd: done` / `g3: done` in `run-log.md`, so `--resume` does not re-ask them; a stopped run resumes at the gate.
 
 Cost: `report.md` ends with a `Cost:` line. Interactive runs write `Cost: n/a (interactive; check /cost)`.
 `run-headless.sh` tees the stream-json output, reads `total_cost_usd` from the final result message (node) and writes
@@ -44,7 +52,7 @@ before Deliver, the line goes to `run-log.md`). No per-stage ledger or budget ho
 
 ## Stacks
 
-The PRD states `Stack: <profile>`; the plan adds `UI:`, `DB:`, `ML:` lines. Profiles (details in `stacks.md`):
+The PRD states `Stack: <profile>` and `UI: <web|mobile|desktop|none>`; the plan adds `DB:` and `ML:` lines. Profiles (details in `stacks.md`):
 
 | Profile | Reviewer | Build-fixer | Test skill |
 |---|---|---|---|
@@ -68,10 +76,11 @@ Only the python profile has been run end to end; the others are untested wiring.
 | Intake | prompt-optimize | |
 | Research | deep-research (2 researchers), docs-lookup if context7 is installed | 3 researchers + one gap round |
 | PRD | prp-prd | |
-| Plan | planner + prp-plan; architect (UI or DB apps); database-reviewer (DB); frontend-design (web UI) | code-architect |
+| Design (UI apps) | general-purpose + frontend-design + design-quality rules | design critique against design-quality, one revision |
+| Plan | planner + prp-plan; architect (UI or DB apps); database-reviewer (DB) | code-architect |
 | Build | tdd-guide + tdd/stack test skill + prp-implement + test-coverage; stack build-fixer on failure | gan-build polish loop (web UI, 3 iterations) |
-| Review | stack reviewer + code-review, security-reviewer + security-review, database-reviewer (DB) | santa-loop, ponytail-review, silent-failure-hunter, type-design-analyzer (typed), performance-optimizer, pr-test-analyzer |
-| Verify | general-purpose evaluator + verify + run + test-coverage; e2e-runner + e2e (web UI) | gan-evaluator, quality-gate |
+| Review | stack reviewer + code-review (+ tokens/layouts check for UI), security-reviewer + security-review, database-reviewer (DB) | santa-loop, ponytail-review, silent-failure-hunter, type-design-analyzer (typed), performance-optimizer, pr-test-analyzer |
+| Verify | general-purpose evaluator + verify + run + test-coverage; e2e-runner + e2e (web UI, also vs mockups) | gan-evaluator, quality-gate |
 | Deliver | doc-updater (update-docs, update-codemaps), prp-commit; prp-pr with `--pr`; opensource-packager with `--oss` | |
 | Learn | learn + learn-eval -> `lessons.md` (read by later Plan and Build stages) | |
 
@@ -126,6 +135,6 @@ pushes; e2e-runner uses Playwright, not agent-browser; learn/learn-eval write to
 
 The plugin adds only the conductor, `stacks.md`, hooks and scripts. Every agent and skill it calls lives in the
 user's `~/.claude` (`agents/`, `commands/`, `.agents/skills/`, `skills/synced/` for `anthropic-skills:deep-research`)
-or in installed plugins (`ponytail`, `frontend-design`). On another machine those must be installed, and
+or in installed plugins (`ponytail`, `frontend-design`), plus `~/.claude/rules/web/` for the Design stage. On another machine those must be installed, and
 `FACTORY_RUNS` (or the default `D:/workspace/factory-runs`) must be a real folder; the conductor, guard hook,
 `run-headless.sh` and `eval/run-gate.sh` all read it, and `lessons.md` lives there.
